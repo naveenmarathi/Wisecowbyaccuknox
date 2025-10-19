@@ -65,7 +65,8 @@ eksctl create iamserviceaccount \
 Replace ACCOUNT-ID with your actual AWS Account ID.
 
 # Install AWS Load Balancer Controller
-Add the EKS Helm chart repo and install the controller:
+-Add the EKS Helm chart repo and install the controller:
+sudo snap install helm --classic
 helm repo add eks https://aws.github.io/eks-charts
 helm repo update
 helm install aws-load-balancer-controller eks/aws-load-balancer-controller \
