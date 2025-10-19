@@ -76,3 +76,16 @@ helm install aws-load-balancer-controller eks/aws-load-balancer-controller \
 # Verification:
 Once installed, verify the controller is running:
 -kubectl get pods -n kube-system
+
+## Step 4: Install cert-manager
+
+```bash
+# Install cert-manager
+kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.13.0/cert-manager.yaml
+kubectl apply -f URL : This tells Kubernetes to create/update resources described in the YAML file at the given URL.
+What cert-manager is: A Kubernetes tool that automatically manages TLS/SSL certificates for your applications, e.g., getting certificates from Let’s Encrypt and keeping them renewed.
+So this command installs cert-manager in your cluster.
+
+# Wait for cert-manager to be ready
+kubectl wait --namespace cert-manager --for=condition=ready pod --selector=app=cert-manager --timeout=90s
+```
