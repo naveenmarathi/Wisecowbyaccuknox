@@ -30,3 +30,14 @@ aws ecr get-login-password --region REGION | docker login --username AWS --passw
 # Push image
 docker push ACCOUNT-ID.dkr.ecr.REGION.amazonaws.com/wisecow:latest
 ```
+
+## Step 2: Create EKS Cluster
+
+```bash
+# eksctl create cluster --name wisecow-1-cluster --region us-east-1 --nodegroup-name wisecow-nodes \
+  --node-type t3.medium --nodes 2 --nodes-min 1 --nodes-max 3 --managed
+
+# Update kubeconfig
+aws eks update-kubeconfig --region us-east-1 --name wisecow-1-cluster
+```
+
