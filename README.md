@@ -45,12 +45,12 @@ aws eks update-kubeconfig --region us-east-1 --name wisecow-1-cluster
 
 ```bash
 # Enable IAM OIDC provider for the cluster (required for IAM roles for service accounts)
-eksctl utils associate-iam-oidc-provider --region=us-west-2 --cluster=wisecow-cluster --approve
+eksctl utils associate-iam-oidc-provider --region=us-east-1 --cluster=wisecow-1-cluster --approve
 
 # Download and create the IAM policy required by the AWS Load Balancer Controller:
 curl -O https://raw.githubusercontent.com/kubernetes-sigs/aws-load-balancer-controller/v2.7.2/docs/install/iam_policy.json
 aws iam create-policy \
-    --policy-name AWSLoadBalancerControllerIAMPolicy \
+    --policy-name AWSLoadBalancerControllerIAMPolicyForEKS \
     --policy-document file://iam_policy.json
 
 # Create IAM service account
