@@ -20,4 +20,4 @@ spec:
           image: 091060535961.dkr.ecr.us-east-1.amazonaws.com/wisecow-1:latest
           imagePullPolicy: Always
           ports:
-            - containerPort: 4499:
+            - containerPort: 4499
