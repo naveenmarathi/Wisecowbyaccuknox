@@ -41,3 +41,38 @@ docker push ACCOUNT-ID.dkr.ecr.REGION.amazonaws.com/wisecow:latest
 aws eks update-kubeconfig --region us-east-1 --name wisecow-1-cluster
 ```
 
+## Step 3: Install AWS Load Balancer Controller
+
+```bash
+# Enable IAM OIDC provider for the cluster (required for IAM roles for service accounts)
+eksctl utils associate-iam-oidc-provider --region=us-west-2 --cluster=wisecow-cluster --approve
+
+# Download and create the IAM policy required by the AWS Load Balancer Controller:
+curl -O https://raw.githubusercontent.com/kubernetes-sigs/aws-load-balancer-controller/v2.7.2/docs/install/iam_policy.json
+aws iam create-policy \
+    --policy-name AWSLoadBalancerControllerIAMPolicy \
+    --policy-document file://iam_policy.json
+
+# Create IAM service account
+-Create a Kubernetes service account and attach the IAM policy to it:
+eksctl create iamserviceaccount \
+  --cluster=wisecow-cluster \
+  --namespace=kube-system \
+  --name=aws-load-balancer-controller \
+  --role-name AmazonEKSLoadBalancerControllerRole \
+  --attach-policy-arn=arn:aws:iam::ACCOUNT-ID:policy/AWSLoadBalancerControllerIAMPolicy \
+  --approve
+Replace ACCOUNT-ID with your actual AWS Account ID.
+
+# Install AWS Load Balancer Controller
+Add the EKS Helm chart repo and install the controller:
+helm repo add eks https://aws.github.io/eks-charts
+helm repo update
+helm install aws-load-balancer-controller eks/aws-load-balancer-controller \
+  -n kube-system \
+  --set clusterName=wisecow-cluster \
+  --set serviceAccount.create=false \
+  --set serviceAccount.name=aws-load-balancer-controller
+# Verification:
+Once installed, verify the controller is running:
+-kubectl get pods -n kube-system
