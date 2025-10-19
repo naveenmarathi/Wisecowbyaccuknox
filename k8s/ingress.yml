@@ -2,12 +2,12 @@ apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: wisecow-ingress
-  namespace: wisecow-1       # <-- correct namespace
+  namespace: wisecow-1
   annotations:
     kubernetes.io/ingress.class: alb
-    cert-manager.io/cluster-issuer: "letsencrypt-prod"
     alb.ingress.kubernetes.io/scheme: internet-facing
     alb.ingress.kubernetes.io/listen-ports: '[{"HTTP":80},{"HTTPS":443}]'
+    alb.ingress.kubernetes.io/certificate-arn: arn:aws:acm:us-east-1:091060535961:certificate/0c427519-575d-44aa-b199-4597c1183c51
 spec:
   rules:
     - host: naveenmarathi.xyz
@@ -20,7 +20,3 @@ spec:
                 name: wisecow-1-service
                 port:
                   number: 80
-  tls:
-    - hosts:
-        - naveenmarathi.xyz
-      secretName: wisecow-tls
