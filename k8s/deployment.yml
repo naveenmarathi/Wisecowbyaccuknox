@@ -1,7 +1,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: wisecow-deployment
+  name: wisecow-1-deployment
   namespace: wisecow-1
   labels:
     app: wisecow-1
@@ -16,15 +16,8 @@ spec:
         app: wisecow-1
     spec:
       containers:
-      - name: wisecow-1
-        image: naveenm323/wisecow-app:latest
-        imagePullPolicy: Always
-        ports:
-        - containerPort: 4499
-        resources:
-          requests:
-            memory: "64Mi"
-            cpu: "50m"
-          limits:
-            memory: "128Mi"
-            cpu: "100m"
+        - name: wisecow-1
+          image: 091060535961.dkr.ecr.us-east-1.amazonaws.com/wisecow-1:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 4499:
