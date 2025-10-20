@@ -1,12 +1,6 @@
 apiVersion: cert-manager.io/v1
-kind: Certificate
+kind: ClusterIssuer
 metadata:
-  name: wisecow-cert
-  namespace: wisecow-1
+  name: selfsigned-issuer
 spec:
-  secretName: wisecow-tls
-  dnsNames:
-  - naveenmarathi.xyz
-  issuerRef:
-    name: selfsigned-issuer
-    kind: ClusterIssuer
+  selfSigned: {}
