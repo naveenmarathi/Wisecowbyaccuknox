@@ -24,7 +24,7 @@ Content-Type: text/html
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Kubernetes Knowledge Center</title>
+    <title>Deployment of wisecow application using Kubernetes EKS </title>
     <style>
         body {
             font-family: Arial, sans-serif;
