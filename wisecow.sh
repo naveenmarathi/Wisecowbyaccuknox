@@ -24,65 +24,54 @@ Content-Type: text/html
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Deployment of wisecow application using Kubernetes EKS </title>
+    <title>Deployment of Wisecow Application using Kubernetes EKS</title>
     <style>
         body {
             font-family: Arial, sans-serif;
-            background-color: #f4f7fa;
+            background: linear-gradient(135deg, #74ABE2, #5563DE);
             margin: 0;
             padding: 0;
+            color: #fff;
         }
         header {
-            background-color: #4a90e2;
-            color: white;
+            background-color: rgba(0, 0, 0, 0.2);
+            color: #fff;
             padding: 20px;
             text-align: center;
         }
         .signature {
-            background-color: #fff;
+            background-color: rgba(255, 255, 255, 0.9);
+            color: #222;
             padding: 10px;
             text-align: center;
             font-weight: bold;
+            border-radius: 6px;
+            margin: 20px auto;
+            width: 80%;
         }
         .fortune {
-            background-color: #e6f7ff;
+            background-color: rgba(255, 255, 255, 0.85);
+            color: #1a237e;
             padding: 15px;
             font-family: monospace;
             white-space: pre;
             border: 1px solid #cce7ff;
-            margin: 20px;
-        }
-        .section {
-            margin: 20px;
-            padding: 20px;
-            border-radius: 8px;
-        }
-        .section:nth-child(even) {
-            background-color: #ffffff;
-        }
-        .section:nth-child(odd) {
-            background-color: #f0f0f5;
+            margin: 20px auto;
+            width: 80%;
+            border-radius: 6px;
         }
         h2 {
-            color: #333;
-        }
-        .question {
-            font-weight: bold;
-            color: #1a237e;
-        }
-        .answer {
-            margin-top: 5px;
-            color: #2e7d32;
+            color: #fff;
         }
     </style>
 </head>
 <body>
     <header>
-        <h1>Welcome to deployment of wisecow application</h1>
+        <h1>Welcome to Deployment of Wisecow Application</h1>
     </header>
 
     <div class="signature">
-        Successfully deployed the wisecow application 
+        ✅ Successfully Deployed the Wisecow Application
     </div>
 
     <div class="fortune">
@@ -105,8 +94,7 @@ prerequisites() {
 
 main() {
     prerequisites
-    echo "Wisdom served on port=$SRVPORT..."
-
+    echo "Wisecow server running on port=$SRVPORT..."
     while true; do
         cat $RSPFILE | nc -l $SRVPORT | handleRequest
         sleep 0.01
