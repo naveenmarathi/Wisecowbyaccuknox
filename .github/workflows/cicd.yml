@@ -47,21 +47,21 @@ jobs:
         DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
       run: |
         # Build image with multiple tags
-        docker build -t $DOCKER_USERNAME/wisecow-tejas:$IMAGE_TAG .
-        docker build -t $DOCKER_USERNAME/wisecow-tejas:latest .
+        docker build -t $DOCKER_USERNAME/wisecow-naveen:$IMAGE_TAG .
+        docker build -t $DOCKER_USERNAME/wisecow-naveen:latest .
         docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
         docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:latest .
         
         # Test image locally
-        docker run -d -p 4499:4499 --name wisecow-test $DOCKER_USERNAME/wisecow-tejas:$IMAGE_TAG
+        docker run -d -p 4499:4499 --name wisecow-test $DOCKER_USERNAME/wisecow-naveen:$IMAGE_TAG
         sleep 5
         curl -f http://localhost:4499 || exit 1
         docker stop wisecow-test
         docker rm wisecow-test
         
         # Push to Docker Hub
-        docker push $DOCKER_USERNAME/wisecow-tejas:$IMAGE_TAG
-        docker push $DOCKER_USERNAME/wisecow-tejas:latest
+        docker push $DOCKER_USERNAME/wisecow-naveen:$IMAGE_TAG
+        docker push $DOCKER_USERNAME/wisecow-naveen:latest
         
         # Push to ECR
         docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
@@ -93,7 +93,7 @@ jobs:
         IMAGE_URI: ${{ needs.build-and-push.outputs.image-uri }}
       run: |
         # Update deployment.yaml with new image
-        sed -i "s|image: tejas24l/wisecow-tejas:latest|image: $IMAGE_URI|g" k8s/03-deployment.yaml
+        sed -i "s|image: naveen/wisecow-naveen:latest|image: $IMAGE_URI|g" k8s/03-deployment.yaml
         
         # Apply all manifests
         kubectl apply -f k8s/01-namespace.yaml
