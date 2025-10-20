@@ -2,21 +2,24 @@ apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: wisecow-ingress
-  namespace: wisecow-1
+  namespace: wisecow
   annotations:
-    kubernetes.io/ingress.class: alb
-    alb.ingress.kubernetes.io/scheme: internet-facing
-    alb.ingress.kubernetes.io/listen-ports: '[{"HTTP":80},{"HTTPS":443}]'
-    alb.ingress.kubernetes.io/certificate-arn: arn:aws:acm:us-east-1:091060535961:certificate/0c427519-575d-44aa-b199-4597c1183c51
+    cert-manager.io/cluster-issuer: "selfsigned-issuer"
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
 spec:
+  ingressClassName: nginx
+  tls:
+  - hosts:
+    - a24a963e5a0f34ffc9b255609a14c5e0-b53a9b331bab26d1.elb.us-east-1.amazonaws.com
+    secretName: wisecow-tls
   rules:
-    - host: naveenmarathi.xyz
-      http:
-        paths:
-          - path: /
-            pathType: Prefix
-            backend:
-              service:
-                name: wisecow-1-service
-                port:
-                  number: 80
+  - host: a24a963e5a0f34ffc9b255609a14c5e0-b53a9b331bab26d1.elb.us-east-1.amazonaws.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: wisecow-service
+            port:
+              number: 80
