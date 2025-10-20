@@ -1,0 +1,115 @@
+name: Build and Deploy Wisecow to EKS
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+env:
+  AWS_REGION: us-east-1
+  EKS_CLUSTER_NAME: wisecow-cluster
+  ECR_REPOSITORY: wisecow
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    outputs:
+      image-tag: ${{ github.sha }}
+      image-uri: ${{ steps.build-image.outputs.image }}
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ${{ env.AWS_REGION }}
+
+    - name: Login to Docker Hub
+      uses: docker/login-action@v3
+      with:
+        username: ${{ secrets.DOCKER_USERNAME }}
+        password: ${{ secrets.Docker_Password }}
+
+    - name: Login to Amazon ECR
+      id: login-ecr
+      uses: aws-actions/amazon-ecr-login@v2
+
+    - name: Build and push Docker images
+      id: build-image
+      env:
+        ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+        IMAGE_TAG: ${{ github.sha }}
+        DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+      run: |
+        # Build image with multiple tags
+        docker build -t $DOCKER_USERNAME/wisecow-tejas:$IMAGE_TAG .
+        docker build -t $DOCKER_USERNAME/wisecow-tejas:latest .
+        docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
+        docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:latest .
+        
+        # Test image locally
+        docker run -d -p 4499:4499 --name wisecow-test $DOCKER_USERNAME/wisecow-tejas:$IMAGE_TAG
+        sleep 5
+        curl -f http://localhost:4499 || exit 1
+        docker stop wisecow-test
+        docker rm wisecow-test
+        
+        # Push to Docker Hub
+        docker push $DOCKER_USERNAME/wisecow-tejas:$IMAGE_TAG
+        docker push $DOCKER_USERNAME/wisecow-tejas:latest
+        
+        # Push to ECR
+        docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+        docker push $ECR_REGISTRY/$ECR_REPOSITORY:latest
+        
+        echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
+
+  deploy:
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ${{ env.AWS_REGION }}
+
+    - name: Update kubeconfig for EKS
+      run: aws eks update-kubeconfig --region ${{ env.AWS_REGION }} --name ${{ env.EKS_CLUSTER_NAME }}
+
+    - name: Update deployment image
+      env:
+        IMAGE_URI: ${{ needs.build-and-push.outputs.image-uri }}
+      run: |
+        # Update deployment.yaml with new image
+        sed -i "s|image: tejas24l/wisecow-tejas:latest|image: $IMAGE_URI|g" k8s/03-deployment.yaml
+        
+        # Apply all manifests
+        kubectl apply -f k8s/01-namespace.yaml
+        kubectl apply -f k8s/02-cert-issuer.yaml
+        kubectl apply -f k8s/03-deployment.yaml
+        kubectl apply -f k8s/04-service.yaml
+        kubectl apply -f k8s/05-ingress.yaml
+
+    - name: Wait for deployment
+      run: |
+        kubectl wait --for=condition=available --timeout=300s deployment/wisecow-deployment -n wisecow
+        kubectl get pods -n wisecow
+        kubectl get svc -n wisecow
+        kubectl get ingress -n wisecow
+
+    - name: Get application URL
+      run: |
+        echo "Application deployed successfully!"
+        kubectl get ingress wisecow-ingress -n wisecow
