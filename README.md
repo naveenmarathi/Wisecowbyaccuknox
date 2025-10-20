@@ -111,8 +111,6 @@ docker push ACCOUNT-ID.dkr.ecr.REGION.amazonaws.com/wisecow:latest
 
 ## Step 6: Update Kubernetes Manifests
 
-### Update deployment.yaml
-```yaml
 # Update image in k8s/deployment.yaml
 image: ACCOUNT-ID.dkr.ecr.REGION.amazonaws.com/wisecow:latest
 imagePullPolicy: Always
