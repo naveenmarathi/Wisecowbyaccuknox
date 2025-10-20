@@ -90,3 +90,129 @@ So this command installs cert-manager in your cluster.
 # Wait for cert-manager to be ready
 kubectl wait --namespace cert-manager --for=condition=ready pod --selector=app=cert-manager --timeout=90s
 ```
+
+## Step 5: Build and Push Docker Image
+
+```bash
+# Build Docker image
+docker build -t wisecow:latest .
+
+# Tag for ECR (replace ACCOUNT-ID and REGION)
+docker tag wisecow:latest ACCOUNT-ID.dkr.ecr.REGION.amazonaws.com/wisecow:latest
+
+# Login to ECR
+aws ecr get-login-password --region REGION | docker login --username AWS --password-stdin ACCOUNT-ID.dkr.ecr.REGION.amazonaws.com
+
+# Create ECR repository
+aws ecr create-repository --repository-name wisecow --region REGION
+
+# Push image
+docker push ACCOUNT-ID.dkr.ecr.REGION.amazonaws.com/wisecow:latest
+
+## Step 6: Update Kubernetes Manifests
+
+### Update deployment.yaml
+```yaml
+# Update image in k8s/deployment.yaml
+image: ACCOUNT-ID.dkr.ecr.REGION.amazonaws.com/wisecow:latest
+imagePullPolicy: Always
+```
+
+### Update cert-issuer.yaml
+```yaml
+# Update email in k8s/cert-issuer.yaml
+email: your-email@domain.com
+```
+
+### Update ingress.yaml
+```yaml
+# Update host in k8s/ingress.yaml
+- host: naveenmarathi.xyz
+```
+
+## Step 7: Deploy Application
+
+```bash
+# Apply cert-manager issuer
+kubectl apply -f k8s/cert-issuer.yaml
+
+# Deploy application
+kubectl apply -f k8s/deployment.yaml
+kubectl apply -f k8s/service.yaml
+
+# Wait for deployment
+kubectl wait --for=condition=available --timeout=300s deployment/wisecow-deployment
+
+# Apply ingress (this will create ALB)
+kubectl apply -f k8s/ingress.yaml
+```
+
+## Step 8: Configure DNS
+
+```bash
+# Get ALB hostname
+kubectl get ingress wisecow-ingress -o jsonpath='{.status.loadBalancer.ingress[0].hostname}'
+
+# Create A record pointing naveenmarathi.xyz to ALB hostname
+# Or update your DNS provider to point to the ALB
+```
+
+## Step 9: Verify Deployment
+
+```bash
+# Check all resources
+kubectl get all,ingress,certificate
+
+# Check certificate status
+kubectl describe certificate wisecow-tls
+
+# Test application
+curl https://naveenmarathi.xyz
+```
+
+## Troubleshooting
+
+### Check pod logs
+```bash
+kubectl logs -l app=wisecow
+```
+
+### Check ingress events
+```bash
+kubectl describe ingress wisecow-ingress
+```
+
+### Check certificate issues
+```bash
+kubectl describe certificate wisecow-tls
+kubectl describe certificaterequest
+```
+
+### Check ALB controller logs
+```bash
+kubectl logs -n kube-system deployment/aws-load-balancer-controller
+```
+
+## Cleanup
+
+```bash
+# Delete application
+kubectl delete -f k8s/
+
+# Delete EKS cluster
+eksctl delete cluster --name wisecow-cluster --region us-west-2
+```
+
+## Important Notes
+
+1. **Replace placeholders:**
+   - `ACCOUNT-ID`: Your AWS account ID
+   - `REGION`: Your AWS region
+   - `naveenmarathi.xyz`: Your domain name
+   - `your-email@domain.com`: Your email for Let's Encrypt
+
+2. **Security Groups:** Ensure ALB security group allows HTTP (80) and HTTPS (443) traffic
+
+3. **Domain Validation:** Let's Encrypt requires domain to be publicly accessible for HTTP-01 challenge
+
+4. **Costs:** EKS cluster and ALB incur AWS charges
