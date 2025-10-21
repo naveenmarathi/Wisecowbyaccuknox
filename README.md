@@ -91,8 +91,6 @@ So this command installs cert-manager in your cluster.
 kubectl wait --namespace cert-manager --for=condition=ready pod --selector=app=cert-manager --timeout=90s
 ```
 
-## Step 6: Update Kubernetes Manifests
-
 # Update image in k8s/deployment.yaml
 image: ACCOUNT-ID.dkr.ecr.REGION.amazonaws.com/wisecow:latest
 imagePullPolicy: Always
@@ -110,7 +108,7 @@ email: your-email@domain.com
 - host: naveenmarathi.xyz
 ```
 
-## Step 7: Deploy Application
+## Step 5: Deploy Application
 
 ```bash
 # Apply cert-manager issuer
@@ -127,7 +125,7 @@ kubectl wait --for=condition=available --timeout=300s deployment/wisecow-deploym
 kubectl apply -f k8s/ingress.yaml
 ```
 
-## Step 8: Configure DNS
+## Step 6: Configure DNS
 
 ```bash
 # Get ALB hostname
@@ -137,7 +135,7 @@ kubectl get ingress wisecow-ingress -o jsonpath='{.status.loadBalancer.ingress[0
 # Or update your DNS provider to point to the ALB
 ```
 
-## Step 9: Verify Deployment
+## Step 7: Verify Deployment
 
 ```bash
 # Check all resources
