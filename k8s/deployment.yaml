@@ -20,11 +20,12 @@ spec:
         image: naveenm323/wisecow-naveen:latest
         imagePullPolicy: Always
         ports:
-        - containerPort: 4499
+        - name: http
+          containerPort: 4499
         resources:
           requests:
-            memory: "64Mi"
-            cpu: "50m"
+            cpu: 50m
+            memory: 64Mi
           limits:
-            memory: "128Mi"
-            cpu: "100m"
+            cpu: 100m
+            memory: 128Mi
