@@ -91,24 +91,6 @@ So this command installs cert-manager in your cluster.
 kubectl wait --namespace cert-manager --for=condition=ready pod --selector=app=cert-manager --timeout=90s
 ```
 
-## Step 5: Build and Push Docker Image
-
-```bash
-# Build Docker image
-docker build -t wisecow:latest .
-
-# Tag for ECR (replace ACCOUNT-ID and REGION)
-docker tag wisecow:latest ACCOUNT-ID.dkr.ecr.REGION.amazonaws.com/wisecow:latest
-
-# Login to ECR
-aws ecr get-login-password --region REGION | docker login --username AWS --password-stdin ACCOUNT-ID.dkr.ecr.REGION.amazonaws.com
-
-# Create ECR repository
-aws ecr create-repository --repository-name wisecow --region REGION
-
-# Push image
-docker push ACCOUNT-ID.dkr.ecr.REGION.amazonaws.com/wisecow:latest
-
 ## Step 6: Update Kubernetes Manifests
 
 # Update image in k8s/deployment.yaml
