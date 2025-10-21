@@ -4,12 +4,12 @@ metadata:
   name: wisecow-service
   namespace: wisecow
   labels:
-    app: wisecow
+    app: wisecow  # Label for Wisecow app
 spec:
   selector:
-    app: wisecow
+    app: wisecow  # Matches pods with label app=wisecow
   ports:
     - protocol: TCP
       port: 80
       targetPort: 4499
-  type: ClusterIP
+  type: ClusterIP  # Internal cluster service
