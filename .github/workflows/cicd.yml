@@ -27,35 +27,35 @@ jobs:
       run: |
         echo "🔧 Simulating AWS credential configuration for region: $AWS_REGION"
         sleep 2
-        echo "✅ AWS credentials configured successfully (mocked)."
+        echo " AWS credentials configured successfully (mocked)."
 
     - name: Build Docker image
       run: |
-        echo "🐳 Building Docker image for Wisecow..."
+        echo " Building Docker image for Wisecow..."
         sleep 3
         echo "docker build -t $DOCKER_IMAGE:${{ github.sha }} ."
-        echo "✅ Docker image built successfully."
+        echo " Docker image built successfully."
 
     - name: Run unit tests
       run: |
-        echo "🧪 Running basic container tests..."
+        echo " Running basic container tests..."
         sleep 2
         echo "curl -f http://localhost:4499 (simulated)"
-        echo "✅ All tests passed successfully."
+        echo " All tests passed successfully."
 
     - name: Push image to registry
       run: |
-        echo "🚀 Simulating image push to Amazon ECR and Docker Hub..."
+        echo " Simulating image push to Amazon ECR and Docker Hub..."
         sleep 2
         echo "docker push $ECR_REPOSITORY:$IMAGE_TAG (mocked)"
-        echo "✅ Image push completed successfully."
+        echo " Image push completed successfully."
 
     - name: Output image details
       id: build-image
       run: |
         IMAGE_URI="public.ecr.aws/demo/wisecow:${{ github.sha }}"
         echo "image=$IMAGE_URI" >> $GITHUB_OUTPUT
-        echo "📦 Image URI generated: $IMAGE_URI"
+        echo " Image URI generated: $IMAGE_URI"
 
   deploy:
     needs: build-and-push
@@ -70,28 +70,28 @@ jobs:
       run: |
         echo "🔧 Configuring AWS credentials (simulated)..."
         sleep 2
-        echo "✅ AWS credentials configured."
+        echo " AWS credentials configured."
 
     - name: Update kubeconfig for EKS
       run: |
-        echo "📡 Updating kubeconfig for cluster: $EKS_CLUSTER_NAME"
+        echo " Updating kubeconfig for cluster: $EKS_CLUSTER_NAME"
         sleep 2
         echo "aws eks update-kubeconfig --region $AWS_REGION --name $EKS_CLUSTER_NAME (simulated)"
-        echo "✅ Kubeconfig updated successfully."
+        echo " Kubeconfig updated successfully."
 
     - name: Deploy application to EKS
       run: |
-        echo "🚀 Deploying Wisecow application to EKS (dry run)..."
+        echo " Deploying Wisecow application to EKS (dry run)..."
         echo "kubectl apply -f k8s/ (simulated)"
         sleep 3
-        echo "✅ Kubernetes manifests validated successfully."
+        echo " Kubernetes manifests validated successfully."
 
     - name: Verify deployment
       run: |
-        echo "🔍 Checking deployment status..."
+        echo " Checking deployment status..."
         sleep 3
         echo "kubectl get pods -n wisecow (simulated)"
-        echo "✅ Wisecow deployment available."
+        echo " Wisecow deployment available."
 
     - name: Display application endpoint
       run: |
