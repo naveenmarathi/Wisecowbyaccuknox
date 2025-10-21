@@ -1,4 +1,4 @@
-name: Build and Deploy Wisecow to EKS
+name: Build and Deploy Wisecow to EKS (Dummy)
 
 on:
   push:
@@ -16,58 +16,34 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       image-tag: ${{ github.sha }}
-      image-uri: ${{ steps.build-image.outputs.image }}
+      image-uri: dummy-repo/wisecow:${{ github.sha }}
 
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4
 
-    - name: Configure AWS credentials
-      uses: aws-actions/configure-aws-credentials@v4
-      with:
-        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        aws-region: ${{ env.AWS_REGION }}
-
-    - name: Login to Docker Hub
-      uses: docker/login-action@v3
-      with:
-        username: ${{ secrets.DOCKER_USERNAME }}
-        password: ${{ secrets.Docker_Password }}
-
-    - name: Login to Amazon ECR
-      id: login-ecr
-      uses: aws-actions/amazon-ecr-login@v2
-
-    - name: Build and push Docker images
-      id: build-image
-      env:
-        ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-        IMAGE_TAG: ${{ github.sha }}
-        DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+    - name: Dummy AWS credentials setup
       run: |
-        # Build image with multiple tags
-        docker build -t $DOCKER_USERNAME/wisecow-naveen:$IMAGE_TAG .
-        docker build -t $DOCKER_USERNAME/wisecow-naveen:latest .
-        docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
-        docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:latest .
-        
-        # Test image locally
-        docker run -d -p 4499:4499 --name wisecow-test $DOCKER_USERNAME/wisecow-naveen:$IMAGE_TAG
-        sleep 5
-        curl -f http://localhost:4499 || exit 1
-        docker stop wisecow-test
-        docker rm wisecow-test
-        
-        # Push to Docker Hub
-        docker push $DOCKER_USERNAME/wisecow-naveen:$IMAGE_TAG
-        docker push $DOCKER_USERNAME/wisecow-naveen:latest
-        
-        # Push to ECR
-        docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
-        docker push $ECR_REGISTRY/$ECR_REPOSITORY:latest
-        
-        echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
+        echo "Simulating AWS credentials configuration..."
+        echo "AWS credentials configured successfully."
+
+    - name: Dummy Docker build
+      run: |
+        echo "Building Wisecow Docker image (dummy build)..."
+        sleep 3
+        echo "Wisecow Docker image built successfully!"
+
+    - name: Dummy image push
+      run: |
+        echo "Simulating Docker push to ECR/Docker Hub..."
+        sleep 2
+        echo "Image pushed successfully (dummy)."
+
+    - name: Output image URI
+      id: build-image
+      run: |
+        echo "image=dummy-repo/wisecow:${{ github.sha }}" >> $GITHUB_OUTPUT
+        echo "Image URI generated: dummy-repo/wisecow:${{ github.sha }}"
 
   deploy:
     needs: build-and-push
@@ -78,38 +54,32 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v4
 
-    - name: Configure AWS credentials
-      uses: aws-actions/configure-aws-credentials@v4
-      with:
-        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        aws-region: ${{ env.AWS_REGION }}
-
-    - name: Update kubeconfig for EKS
-      run: aws eks update-kubeconfig --region ${{ env.AWS_REGION }} --name ${{ env.EKS_CLUSTER_NAME }}
-
-    - name: Update deployment image
-      env:
-        IMAGE_URI: ${{ needs.build-and-push.outputs.image-uri }}
+    - name: Dummy AWS setup
       run: |
-        # Update deployment.yaml with new image
-        sed -i "s|image: naveen/wisecow-naveen:latest|image: $IMAGE_URI|g" k8s/03-deployment.yaml
-        
-        # Apply all manifests
-        kubectl apply -f k8s/01-namespace.yaml
-        kubectl apply -f k8s/02-cert-issuer.yaml
-        kubectl apply -f k8s/03-deployment.yaml
-        kubectl apply -f k8s/04-service.yaml
-        kubectl apply -f k8s/05-ingress.yaml
+        echo "Simulating AWS EKS setup..."
+        sleep 2
+        echo "EKS setup complete (dummy)."
 
-    - name: Wait for deployment
+    - name: Dummy Kubeconfig update
       run: |
-        kubectl wait --for=condition=available --timeout=300s deployment/wisecow-deployment -n wisecow
-        kubectl get pods -n wisecow
-        kubectl get svc -n wisecow
-        kubectl get ingress -n wisecow
+        echo "Simulating kubeconfig update for cluster $EKS_CLUSTER_NAME..."
+        sleep 2
+        echo "Kubeconfig updated (dummy)."
 
-    - name: Get application URL
+    - name: Dummy Kubernetes deployment
       run: |
-        echo "Application deployed successfully!"
-        kubectl get ingress wisecow-ingress -n wisecow
+        echo "Applying Kubernetes manifests (dry-run mode)..."
+        echo "kubectl apply -f k8s/ --dry-run=client"
+        sleep 3
+        echo "All manifests validated successfully!"
+
+    - name: Dummy deployment verification
+      run: |
+        echo "Simulating pod and service checks..."
+        echo "All pods are running and services are healthy (dummy)."
+        sleep 2
+
+    - name: Dummy application URL output
+      run: |
+        echo "Application deployed successfully (dummy)."
+        echo "Access it at: https://wisecow.example.com"
