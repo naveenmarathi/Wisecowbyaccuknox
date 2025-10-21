@@ -10,17 +10,17 @@
 - Installed required packages: fortune, cowsay, netcat-openbsd
 
 # 2.Kubernetes Deployment 
-- Create Namespace
+# Create Namespace
 - kubectl apply -f k8s/namespace.yaml
-- Deploy Service
+# Deploy Service
 - kubectl apply -f k8s/service.yaml
-- Deploy Ingress
+# Deploy Ingress
 - kubectl apply -f k8s/ingress.yaml
-- Build & Push Docker Image
+# Build & Push Docker Image
 - docker build -t wisecow-naveen .
 docker tag wisecow-naveen:latest wisecow:latest
 docker push wisecow:latest
--Deploy Application
+# Deploy Application
 kubectl apply -f k8s/
-Verify Deployment
+# Verify Deployment
 kubectl get pods,svc,ingress -n wisecow
