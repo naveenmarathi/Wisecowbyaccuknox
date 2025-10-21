@@ -8,7 +8,7 @@ on:
 
 env:
   AWS_REGION: us-west-1
-  EKS_CLUSTER_NAME: wisecow-cluster
+  EKS_CLUSTER_NAME: wisecow1-cluster
   ECR_REPOSITORY: wisecow
   DOCKER_IMAGE: wisecow-naveen
 
