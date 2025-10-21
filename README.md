@@ -3,6 +3,10 @@
 ## Overview
 "Follow these steps to deploy the Wisecow application on Amazon EKS with HTTPS enabled, using Encrypt certificates and AWS Load Balancer integration."
 
+## 📌 Project documentation link
+
+[https://drive.google.com/file/d/1eIHH3QLHv03tzZ9CzXioiegNx6XAEktp/view?usp=sharing](https://drive.google.com/file/d/1GYYhgZuB3RBkUlCy0i-8Js5ABd2DlfUx/view?usp=sharing)
+
 ## Prerequisites
 - AWS CLI set up with the necessary permissions
 - kubectl installed for Kubernetes management
