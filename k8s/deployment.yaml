@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
       - name: wisecow
-        image: naveenm323/wisecow-naveen:latest
+        image: public.ecr.aws/z7r4t5x7/wisecow:latest
         imagePullPolicy: Always
         ports:
         - name: http
