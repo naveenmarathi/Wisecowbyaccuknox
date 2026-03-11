@@ -79,7 +79,7 @@ eksctl version
 ## Step 7: Setup EKS Cluster
 
 ```shell
-# eksctl create cluster --name wisecow-cluster --region us-east-1 --nodegroup-name wisecow-nodes \
+ eksctl create cluster --name wisecow-cluster --region us-east-1 --nodegroup-name wisecow-nodes \
   --node-type t2.medium --nodes 2 --nodes-min 1 --nodes-max 2 --managed
 
 # Update kubeconfig
