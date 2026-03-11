@@ -4,22 +4,25 @@ metadata:
   name: wisecow-ingress
   namespace: wisecow
   annotations:
-    cert-manager.io/cluster-issuer: "selfsigned-issuer"
+    cert-manager.io/cluster-issuer: selfsigned-issuer
     nginx.ingress.kubernetes.io/ssl-redirect: "true"
+
 spec:
   ingressClassName: nginx
+
   tls:
-    - hosts:
-        - a24a963e5a0f34ffc9b255609a14c5e0-b53a9b331bab26d1.elb.us-east-1.amazonaws.com
-      secretName: wisecow-tls
+  - hosts:
+    - af4328d2f713b49b786f5264d960e835-8a28e4ccb8871d30.elb.us-east-1.amazonaws.com
+    secretName: wisecow-tls
+
   rules:
-    - host: a24a963e5a0f34ffc9b255609a14c5e0-b53a9b331bab26d1.elb.us-east-1.amazonaws.com
-      http:
-        paths:
-          - path: /
-            pathType: Prefix
-            backend:
-              service:
-                name: wisecow-service
-                port:
-                  number: 80
+  - host: af4328d2f713b49b786f5264d960e835-8a28e4ccb8871d30.elb.us-east-1.amazonaws.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: wisecow-service
+            port:
+              number: 80
