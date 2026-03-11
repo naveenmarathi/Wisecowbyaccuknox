@@ -13,7 +13,6 @@
 - eksctl installed to create and manage EKS clusters
 - Docker installed for building container images
 - A registered domain name
-- Domain DNS managed via Route 53.
 
 ### Step 1: EC2 Setup
 - Launch an Ubuntu instance in your favourite region (eg. region `us-east-1`).
