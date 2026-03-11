@@ -1,25 +1,28 @@
 FROM ubuntu:22.04
 
-# Install prerequisites
+# Install dependencies
 RUN apt-get update && \
-    apt-get install -y fortune-mod cowsay netcat-openbsd && \
-    apt-get clean && \
+    apt-get install -y --no-install-recommends \
+        fortune-mod \
+        cowsay \
+        netcat-openbsd && \
     rm -rf /var/lib/apt/lists/*
 
-# Set PATH to include cowsay
+# Add cowsay path
 ENV PATH="/usr/games:${PATH}"
 
-# Create app directory
+# Create working directory
 WORKDIR /app
 
-# Copy the wisecow script
-COPY wisecow.sh .
+# Copy script
+COPY wisecow.sh /app/wisecow.sh
 
-# Convert line endings and make script executable
-RUN sed -i 's/\r$//' wisecow.sh && chmod +x wisecow.sh
+# Fix line endings and make executable
+RUN sed -i 's/\r$//' /app/wisecow.sh && \
+    chmod +x /app/wisecow.sh
 
-# Expose port
+# Expose application port
 EXPOSE 4499
 
-# Run the application
-CMD ["./wisecow.sh"]
+# Run the script
+CMD ["/app/wisecow.sh"]
