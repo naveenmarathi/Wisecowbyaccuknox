@@ -93,130 +93,110 @@ kubectl apply -f .
 kubectl delete -f .
 ```
 
-### Step 9: Install AWS Load Balancer
+### Step 9: Install NGINX Ingress Controller 
 ``` shell
-curl -O https://raw.githubusercontent.com/kubernetes-sigs/aws-load-balancer-controller/v2.5.4/docs/install/iam_policy.json
-aws iam create-policy --policy-name AWSLoadBalancerControllerIAMPolicy --policy-document file://iam_policy.json
-eksctl utils associate-iam-oidc-provider --region=us-east-1 --cluster=wisecow-cluster --approve
-eksctl create iamserviceaccount --cluster=wisecow-cluster --namespace=kube-system --name=aws-load-balancer-controller --role-name AmazonEKSLoadBalancerControllerRole --attach-policy-arn=arn:aws:iam::091060535961:policy/AWSLoadBalancerControllerIAMPolicy --approve --region=us-east-1
-Replace ACCOUNT-ID with your actual AWS Account ID.
+kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/main/deploy/static/provider/aws/deploy.yaml.
+# Wait 1–2 minutes.
+kubectl get pods -n ingress-nginx
 ```
 
-### Step 10: Deploy AWS Load Balancer Controller
+### Step 10: Get AWS LoadBalancer Address
 ``` shell
-sudo snap install helm --classic
-helm repo add eks https://aws.github.io/eks-charts
-helm repo update eks
-helm install aws-load-balancer-controller eks/aws-load-balancer-controller -n kube-system --set clusterName=wisecow-cluster --set serviceAccount.create=false --set serviceAccount.name=aws-load-balancer-controller
-kubectl get deployment -n kube-system aws-load-balancer-controller
-kubectl apply -f full_stack_lb.yaml
+kubectl get svc -n ingress-nginx
+# You will see something like:
+# ingress-nginx-controller   LoadBalancer
+# Example external address:a24a963e5a0f34ffc9b255609a14c5e0.elb.us-east-1.amazonaws.com
+# Copy this. You will use it in the ingress file.
 ```
 
 # Verification:
 Once installed, verify the controller is running:
 -kubectl get pods -n kube-system
+```
 
-## Step 4: Install cert-manager
-
+### Step 11: Install cert-manager 
 ```shell
 # Install cert-manager
-kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.13.0/cert-manager.yaml
-kubectl apply -f URL : This tells Kubernetes to create/update resources described in the YAML file at the given URL.
-What cert-manager is: A Kubernetes tool that automatically manages TLS/SSL certificates for your applications, e.g., getting certificates from Let’s Encrypt and keeping them renewed.
-So this command installs cert-manager in your cluster.
+kubectl apply -f https://github.com/cert-manager/cert-manager/releases/latest/download/cert-manager.yaml
+# Check
+kubectl get pods -n cert-manager
+# You should see:
+cert-manager
+cert-manager-webhook
+cert-manager-cainjector
+```
 
 # Wait for cert-manager to be ready
 kubectl wait --namespace cert-manager --for=condition=ready pod --selector=app=cert-manager --timeout=90s
 ```
 
-# Update image in k8s/deployment.yaml
-image: ACCOUNT-ID.dkr.ecr.REGION.amazonaws.com/wisecow:latest
-imagePullPolicy: Always
-```
-
-### Update cert-issuer.yaml
+### Step 12: Update cert-issuer.yaml
+# Apply
+kubectl apply -f clusterissuer.yaml-issuer.yaml
+# Verify
+kubectl get clusterissuer
 ```yaml
-# Update email in k8s/cert-issuer.yaml
-email: your-email@domain.com
-```
 
-### Update ingress.yaml
+### Step 13: Create Ingress (HTTPS)
+# Replace <ELB-DNS> with your load balancer DNS.
+``` shell
+kubectl apply -f ingress.yaml
 ```yaml
+
+### Step 14: Verify Certificate
+``` shell
+kubectl get certificate -n wisecow
+# Check secret:
+``` shell
+kubectl get secret -n wisecow
+# You should see:
+wisecow-tls
+```yaml
+
+### Steps 15: Open in Browser
+#Example:
+https://a24a963e5a0f34ffc9b255609a14c5e0.elb.us-east-1.amazonaws.com
+# Browser will Show:
+⚠ Your connection is not private
+#Click:
+Advanced → Proceed
+
+###  Final Architecture (Wisecow Assignment)
+
+Browser
+   │
+HTTPS
+   │
+AWS ELB
+   │
+NGINX Ingress
+   │
+Service
+   │
+Wisecow Pod
+
 # Update host in k8s/ingress.yaml
 - host: naveenmarathi.xyz
-```
+```yaml
 
-## Step 5: Deploy Application
+### Step 16: Configure DNS
 
-```bash
-# Apply cert-manager issuer
-kubectl apply -f k8s/cert-issuer.yaml
-
-# Deploy application
-kubectl apply -f k8s/deployment.yaml
-kubectl apply -f k8s/service.yaml
-
-# Wait for deployment
-kubectl wait --for=condition=available --timeout=300s deployment/wisecow-deployment
-
-# Apply ingress (this will create ALB)
-kubectl apply -f k8s/ingress.yaml
-```
-
-## Step 6: Configure DNS
-
-```bash
+```Shell
 # Get ALB hostname
 kubectl get ingress wisecow-ingress -o jsonpath='{.status.loadBalancer.ingress[0].hostname}'
 
 # Create A record pointing naveenmarathi.xyz to ALB hostname
 # Or update your DNS provider to point to the ALB
-```
-
-## Step 7: Verify Deployment
-
-```bash
-# Check all resources
-kubectl get all,ingress,certificate
-
-# Check certificate status
-kubectl describe certificate wisecow-tls
-
-# Test application
-curl https://naveenmarathi.xyz
-```
-
-## Troubleshooting
-
-### Check pod logs
-```bash
-kubectl logs -l app=wisecow
-```
-
-### Check ingress events
-```bash
-kubectl describe ingress wisecow-ingress
-```
-
-### Check certificate issues
-```bash
-kubectl describe certificate wisecow-tls
-kubectl describe certificaterequest
-```
-
-### Check ALB controller logs
-```bash
-kubectl logs -n kube-system deployment/aws-load-balancer-controller
-```
+```yaml
 
 ## Cleanup
 
-```bash
+```shell
 # Delete application
 kubectl delete -f k8s/
 
 # Delete EKS cluster
-eksctl delete cluster --name wisecow-cluster --region us-west-2
+eksctl delete cluster --name wisecow-cluster --region us-east-1
 ```
 
 ## Important Notes
@@ -225,10 +205,7 @@ eksctl delete cluster --name wisecow-cluster --region us-west-2
    - `ACCOUNT-ID`: Your AWS account ID
    - `REGION`: Your AWS region
    - `naveenmarathi.xyz`: Your domain name
-   - `your-email@domain.com`: Your email for Let's Encrypt
-
+ 
 2. **Security Groups:** Ensure ALB security group allows HTTP (80) and HTTPS (443) traffic
 
-3. **Domain Validation:** Let's Encrypt requires domain to be publicly accessible for HTTP-01 challenge
-
-4. **Costs:** EKS cluster and ALB incur AWS charges
+3. **Costs:** EKS cluster and ALB incur AWS charges
