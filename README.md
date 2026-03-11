@@ -15,15 +15,41 @@
 - A registered domain name
 - Domain DNS managed via Route 53.
 
-## Step 1: Build and Push Docker Image
+### Step 1: EC2 Setup
+- Launch an Ubuntu instance in your favourite region (eg. region `us-east-1`).
+- SSH into the instance from your local machine.
 
-```bash
+### Step 2: Install AWS CLI v2
+``` shell
+curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+sudo apt install unzip-y
+unzip awscliv2.zip
+sudo ./aws/install
+sudo ./aws/install -i /usr/local/aws-cli -b /usr/local/bin --update
+aws configure
+AWS Access Key ID:
+AWS Secret Access Key:
+Default region name:
+Default output format:
+```
+
+### Step 3: Install Docker
+``` shell
+sudo apt-get update
+sudo apt install docker.io
+docker ps
+sudo chown $USER /var/run/docker.sock
+```
+
+## Step 4: Build and Push Docker Image ECR
+
+```shell
 
 # Create ECR repository
 aws ecr create-repository --repository-name wisecow --region REGION
 
 # Build Docker image
-docker build -t wisecow:latest .
+docker build -t wisecow-naveen:latest .
 
 # Tag for ECR (replace ACCOUNT-ID and REGION)
 docker tag wisecow:latest ACCOUNT-ID.dkr.ecr.REGION.amazonaws.com/wisecow:latest
@@ -35,56 +61,64 @@ aws ecr get-login-password --region REGION | docker login --username AWS --passw
 docker push ACCOUNT-ID.dkr.ecr.REGION.amazonaws.com/wisecow:latest
 ```
 
-## Step 2: Create EKS Cluster
-
-```bash
-# eksctl create cluster --name wisecow1-cluster --region us-west-1 --nodegroup-name wisecow-nodes \
-  --node-type t2.medium --nodes 2 --nodes-min 1 --nodes-max 3 --managed
-
-# Update kubeconfig
-aws eks update-kubeconfig --region us-east-1 --name wisecow-1-cluster
+### Step 5: Install kubectl
+``` shell
+curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+chmod +x ./kubectl
+sudo mv ./kubectl /usr/local/bin
+kubectl version --short --client
 ```
 
-## Step 3: Install AWS Load Balancer Controller
+### Step 6: Install eksctl
+``` shell
+curl --silent --location "https://github.com/weaveworks/eksctl/releases/latest/download/eksctl_$(uname -s)_amd64.tar.gz" | tar xz -C /tmp
+sudo mv /tmp/eksctl /usr/local/bin
+eksctl version
+```
 
-```bash
-# Enable IAM OIDC provider for the cluster (required for IAM roles for service accounts)
-eksctl utils associate-iam-oidc-provider --region=us-east-1 --cluster=wisecow-1-cluster --approve
+## Step 7: Setup EKS Cluster
 
-# Download and create the IAM policy required by the AWS Load Balancer Controller:
-curl -O https://raw.githubusercontent.com/kubernetes-sigs/aws-load-balancer-controller/v2.7.2/docs/install/iam_policy.json
-aws iam create-policy \
-    --policy-name AWSLoadBalancerControllerIAMPolicyForEKS \
-    --policy-document file://iam_policy.json
+```shell
+# eksctl create cluster --name wisecow-cluster --region us-east-1 --nodegroup-name wisecow-nodes \
+  --node-type t2.medium --nodes 2 --nodes-min 1 --nodes-max 2 --managed
 
-# Create IAM service account
--Create a Kubernetes service account and attach the IAM policy to it:
-eksctl create iamserviceaccount \
-  --cluster=wisecow-cluster \
-  --namespace=kube-system \
-  --name=aws-load-balancer-controller \
-  --role-name AmazonEKSLoadBalancerControllerRole \
-  --attach-policy-arn=arn:aws:iam::ACCOUNT-ID:policy/AWSLoadBalancerControllerIAMPolicy \
-  --approve
+# Update kubeconfig
+aws eks update-kubeconfig --region us-east-1 --name wisecow-cluster
+kubectl get nodes
+```
+### Step 8: Run Manifests
+``` shell
+kubectl create namespace wisecow
+kubectl apply -f .
+kubectl delete -f .
+```
+
+### Step 9: Install AWS Load Balancer
+``` shell
+curl -O https://raw.githubusercontent.com/kubernetes-sigs/aws-load-balancer-controller/v2.5.4/docs/install/iam_policy.json
+aws iam create-policy --policy-name AWSLoadBalancerControllerIAMPolicy --policy-document file://iam_policy.json
+eksctl utils associate-iam-oidc-provider --region=us-east-1 --cluster=wisecow-cluster --approve
+eksctl create iamserviceaccount --cluster=wisecow-cluster --namespace=kube-system --name=aws-load-balancer-controller --role-name AmazonEKSLoadBalancerControllerRole --attach-policy-arn=arn:aws:iam::091060535961:policy/AWSLoadBalancerControllerIAMPolicy --approve --region=us-east-1
 Replace ACCOUNT-ID with your actual AWS Account ID.
+```
 
-# Install AWS Load Balancer Controller
--Add the EKS Helm chart repo and install the controller:
+### Step 10: Deploy AWS Load Balancer Controller
+``` shell
 sudo snap install helm --classic
 helm repo add eks https://aws.github.io/eks-charts
-helm repo update
-helm install aws-load-balancer-controller eks/aws-load-balancer-controller \
-  -n kube-system \
-  --set clusterName=wisecow-1-cluster \
-  --set serviceAccount.create=false \
-  --set serviceAccount.name=aws-load-balancer-controller
+helm repo update eks
+helm install aws-load-balancer-controller eks/aws-load-balancer-controller -n kube-system --set clusterName=wisecow-cluster --set serviceAccount.create=false --set serviceAccount.name=aws-load-balancer-controller
+kubectl get deployment -n kube-system aws-load-balancer-controller
+kubectl apply -f full_stack_lb.yaml
+```
+
 # Verification:
 Once installed, verify the controller is running:
 -kubectl get pods -n kube-system
 
 ## Step 4: Install cert-manager
 
-```bash
+```shell
 # Install cert-manager
 kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.13.0/cert-manager.yaml
 kubectl apply -f URL : This tells Kubernetes to create/update resources described in the YAML file at the given URL.
