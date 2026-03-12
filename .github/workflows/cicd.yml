@@ -10,6 +10,8 @@ env:
   EKS_CLUSTER_NAME: wisecow-cluster
   ECR_REPOSITORY: wisecow
   NAMESPACE: wisecow
+  DEPLOYMENT_NAME: wisecow-deployment
+  CONTAINER_NAME: wisecow
 
 jobs:
   deploy:
@@ -17,18 +19,19 @@ jobs:
 
     steps:
 
+    # 1️⃣ Checkout repository
     - name: Checkout Code
       uses: actions/checkout@v4
 
-    # Configure AWS Credentials
-    - name: Configure AWS credentials
+    # 2️⃣ Configure AWS credentials
+    - name: Configure AWS Credentials
       uses: aws-actions/configure-aws-credentials@v4
       with:
         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         aws-region: ${{ env.AWS_REGION }}
 
-    # Ensure ECR repository exists
+    # 3️⃣ Ensure ECR repository exists
     - name: Create ECR Repository if not exists
       run: |
         aws ecr describe-repositories \
@@ -38,32 +41,17 @@ jobs:
         --repository-name $ECR_REPOSITORY \
         --region $AWS_REGION
 
-    # Login to ECR
+    # 4️⃣ Login to ECR
     - name: Login to Amazon ECR
       id: login-ecr
       uses: aws-actions/amazon-ecr-login@v2
 
-    # Setup Docker Buildx for caching
-    - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v3
-
-    # Cache Docker layers
-    - name: Cache Docker layers
-      uses: actions/cache@v4
-      with:
-        path: /tmp/.buildx-cache
-        key: ${{ runner.os }}-buildx-${{ github.sha }}
-        restore-keys: |
-          ${{ runner.os }}-buildx-
-
-    # Build Docker image
+    # 5️⃣ Build Docker image
     - name: Build Docker Image
       run: |
-        docker build \
-        -t wisecow:${{ github.sha }} \
-        -t wisecow:latest .
+        docker build -t wisecow:${{ github.sha }} -t wisecow:latest .
 
-    # Tag Docker image
+    # 6️⃣ Tag Docker image
     - name: Tag Docker Image
       run: |
         docker tag wisecow:${{ github.sha }} \
@@ -72,33 +60,33 @@ jobs:
         docker tag wisecow:latest \
         ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:latest
 
-    # Push to ECR
-    - name: Push Docker Image to ECR
+    # 7️⃣ Push Docker image to ECR
+    - name: Push Image to ECR
       run: |
         docker push ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ github.sha }}
         docker push ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:latest
 
-    # Configure kubectl
+    # 8️⃣ Update kubeconfig for EKS
     - name: Update kubeconfig
       run: |
         aws eks update-kubeconfig \
         --region $AWS_REGION \
         --name $EKS_CLUSTER_NAME
 
-    # Deploy to Kubernetes
+    # 9️⃣ Update Kubernetes deployment image
     - name: Deploy to EKS
       run: |
-        kubectl set image deployment/wisecow \
-        wisecow=${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ github.sha }} \
+        kubectl set image deployment/$DEPLOYMENT_NAME \
+        $CONTAINER_NAME=${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ github.sha }} \
         -n $NAMESPACE
 
-    # Wait for rollout
+    # 🔟 Verify rollout
     - name: Verify Deployment
       run: |
-        kubectl rollout status deployment/wisecow -n $NAMESPACE
+        kubectl rollout status deployment/$DEPLOYMENT_NAME -n $NAMESPACE
 
-    # Rollback if deployment fails
-    - name: Rollback if failed
+    # 1️⃣1️⃣ Rollback if deployment fails
+    - name: Rollback if Failed
       if: failure()
       run: |
-        kubectl rollout undo deployment/wisecow -n $NAMESPACE
+        kubectl rollout undo deployment/$DEPLOYMENT_NAME -n $NAMESPACE
