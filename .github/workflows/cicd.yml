@@ -6,8 +6,8 @@ on:
       - main
 
 env:
-  AWS_REGION: us-west-1
-  EKS_CLUSTER_NAME: wisecow1-cluster
+  AWS_REGION: us-east-1
+  EKS_CLUSTER_NAME: wisecow-cluster
   ECR_REPOSITORY: wisecow
 
 jobs:
@@ -32,11 +32,11 @@ jobs:
 
     - name: Build Docker image
       run: |
-        docker build -t wisecow:${{ github.sha }} .
+        docker build -t wisecow-naveen:${{ github.sha }} .
 
     - name: Tag Docker image
       run: |
-        docker tag wisecow:${{ github.sha }} \
+        docker tag wisecow-naveen:${{ github.sha }} \
         ${{ steps.login-ecr.outputs.registry }}/wisecow:${{ github.sha }}
 
     - name: Push image to ECR
