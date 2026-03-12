@@ -75,7 +75,7 @@ header {
 <body>
 
 <header>
-<h1>Welcome to Deployment of Wisecow Application</h1>
+<h1>Deployment of Wisecow Application on EKS </h1>
 </header>
 
 <div class="signature">
