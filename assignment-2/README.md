@@ -28,7 +28,7 @@ High Memory usage: 69.9%
 ```
 
 
-### 4. Application Health Checker ✅
+### 2. Application Health Checker ✅
 **File**: `app-health.sh`
 
 **Features**:
