@@ -25,14 +25,14 @@ Content-Type: text/html
 <head>
     <meta charset="UTF-8">
     <title>Deployment of Wisecow Application using Kubernetes EKS</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background: linear-gradient(135deg, #74ABE2, #5563DE);
-            margin: 0;
-            padding: 0;
-            color: #fff;
-        }
+   <style>
+body {
+    font-family: Arial, sans-serif;
+    background: linear-gradient(135deg, #2193b0, #6dd5ed);
+    margin: 0;
+    padding: 0;
+    color: #fff;
+}
         header {
             background-color: rgba(0, 0, 0, 0.2);
             color: #fff;
