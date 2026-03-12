@@ -35,7 +35,7 @@ Connection: close
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Deployment of Wisecow Application using Kubernetes EKS</title>
+<title>Welcome to Deployment of Wisecow Application using Kubernetes EKS</title>
 <style>
 body {
     font-family: Arial, sans-serif;
