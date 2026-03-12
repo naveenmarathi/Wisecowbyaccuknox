@@ -32,11 +32,11 @@ jobs:
 
     - name: Build Docker image
       run: |
-        docker build -t wisecow-naveen:${{ github.sha }} .
+        docker build -t wisecow:${{ github.sha }} .
 
     - name: Tag Docker image
       run: |
-        docker tag wisecow-naveen:${{ github.sha }} \
+        docker tag wisecow:${{ github.sha }} \
         ${{ steps.login-ecr.outputs.registry }}/wisecow:${{ github.sha }}
 
     - name: Push image to ECR
