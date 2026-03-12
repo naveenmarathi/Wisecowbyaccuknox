@@ -6,20 +6,30 @@ RSPFILE="response"
 rm -f "$RSPFILE"
 mkfifo "$RSPFILE"
 
+cleanup() {
+    rm -f "$RSPFILE"
+    exit
+}
+
+trap cleanup EXIT
+
 get_api() {
-    read -r line
-    echo "$line"
+    # Read HTTP request headers
+    while read -r line; do
+        [ "$line" = $'\r' ] && break
+    done
 }
 
 handleRequest() {
-    # Read request
+
     get_api
 
     mod=$(fortune)
 
 cat <<EOF > "$RSPFILE"
 HTTP/1.1 200 OK
-Content-Type: text/html
+Content-Type: text/html; charset=UTF-8
+Connection: close
 
 <!DOCTYPE html>
 <html lang="en">
@@ -82,28 +92,22 @@ EOF
 }
 
 prerequisites() {
-    if ! command -v cowsay >/dev/null 2>&1; then
-        echo "cowsay is not installed"
-        exit 1
-    fi
 
-    if ! command -v fortune >/dev/null 2>&1; then
-        echo "fortune is not installed"
-        exit 1
-    fi
-
-    if ! command -v nc >/dev/null 2>&1; then
-        echo "netcat (nc) is not installed"
-        exit 1
-    fi
+    for cmd in cowsay fortune nc; do
+        if ! command -v "$cmd" >/dev/null 2>&1; then
+            echo "$cmd is not installed"
+            exit 1
+        fi
+    done
 }
 
 main() {
+
     prerequisites
     echo "Wisecow server running on port=$SRVPORT..."
 
     while true; do
-        cat "$RSPFILE" | nc -l -p "$SRVPORT" | handleRequest
+        cat "$RSPFILE" | nc -l "$SRVPORT" | handleRequest
         sleep 0.01
     done
 }
