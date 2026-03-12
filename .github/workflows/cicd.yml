@@ -1,99 +1,58 @@
-name: Build and Deploy Wisecow to Amazon EKS
+name: Build and Deploy Wisecow to EKS
 
 on:
   push:
-    branches: [ main ]
-  pull_request:
-    branches: [ main ]
+    branches:
+      - main
 
 env:
   AWS_REGION: us-west-1
   EKS_CLUSTER_NAME: wisecow1-cluster
   ECR_REPOSITORY: wisecow
-  DOCKER_IMAGE: wisecow-naveen
 
 jobs:
-  build-and-push:
-    runs-on: ubuntu-latest
-    outputs:
-      image-tag: ${{ github.sha }}
-      image-uri: public.ecr.aws/demo/wisecow:${{ github.sha }}
-
-    steps:
-    - name: Checkout source code
-      uses: actions/checkout@v4
-
-    - name: Configure AWS credentials
-      run: |
-        echo "🔧 Simulating AWS credential configuration for region: $AWS_REGION"
-        sleep 2
-        echo " AWS credentials configured successfully (mocked)."
-
-    - name: Build Docker image
-      run: |
-        echo " Building Docker image for Wisecow..."
-        sleep 3
-        echo "docker build -t $DOCKER_IMAGE:${{ github.sha }} ."
-        echo " Docker image built successfully."
-
-    - name: Run unit tests
-      run: |
-        echo " Running basic container tests..."
-        sleep 2
-        echo "curl -f http://localhost:4499 (simulated)"
-        echo " All tests passed successfully."
-
-    - name: Push image to registry
-      run: |
-        echo " Simulating image push to Amazon ECR and Docker Hub..."
-        sleep 2
-        echo "docker push $ECR_REPOSITORY:$IMAGE_TAG (mocked)"
-        echo " Image push completed successfully."
-
-    - name: Output image details
-      id: build-image
-      run: |
-        IMAGE_URI="public.ecr.aws/demo/wisecow:${{ github.sha }}"
-        echo "image=$IMAGE_URI" >> $GITHUB_OUTPUT
-        echo " Image URI generated: $IMAGE_URI"
-
   deploy:
-    needs: build-and-push
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'
 
     steps:
+
     - name: Checkout repository
       uses: actions/checkout@v4
 
     - name: Configure AWS credentials
-      run: |
-        echo "🔧 Configuring AWS credentials (simulated)..."
-        sleep 2
-        echo " AWS credentials configured."
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ${{ secrets.AWS_REGION }}
 
-    - name: Update kubeconfig for EKS
-      run: |
-        echo " Updating kubeconfig for cluster: $EKS_CLUSTER_NAME"
-        sleep 2
-        echo "aws eks update-kubeconfig --region $AWS_REGION --name $EKS_CLUSTER_NAME (simulated)"
-        echo " Kubeconfig updated successfully."
+    - name: Login to Amazon ECR
+      id: login-ecr
+      uses: aws-actions/amazon-ecr-login@v2
 
-    - name: Deploy application to EKS
+    - name: Build Docker image
       run: |
-        echo " Deploying Wisecow application to EKS (dry run)..."
-        echo "kubectl apply -f k8s/ (simulated)"
-        sleep 3
-        echo " Kubernetes manifests validated successfully."
+        docker build -t wisecow:${{ github.sha }} .
+
+    - name: Tag Docker image
+      run: |
+        docker tag wisecow:${{ github.sha }} \
+        ${{ steps.login-ecr.outputs.registry }}/wisecow:${{ github.sha }}
+
+    - name: Push image to ECR
+      run: |
+        docker push ${{ steps.login-ecr.outputs.registry }}/wisecow:${{ github.sha }}
+
+    - name: Update kubeconfig
+      run: |
+        aws eks update-kubeconfig --region $AWS_REGION --name $EKS_CLUSTER_NAME
+
+    - name: Deploy to Kubernetes
+      run: |
+        kubectl set image deployment/wisecow \
+        wisecow=${{ steps.login-ecr.outputs.registry }}/wisecow:${{ github.sha }} \
+        -n wisecow
 
     - name: Verify deployment
       run: |
-        echo " Checking deployment status..."
-        sleep 3
-        echo "kubectl get pods -n wisecow (simulated)"
-        echo " Wisecow deployment available."
-
-    - name: Display application endpoint
-      run: |
-        echo "🌐 Application deployed successfully!"
-        echo "You can access it at: https://wisecow.example.com"
+        kubectl rollout status deployment/wisecow -n wisecow
