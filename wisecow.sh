@@ -60,7 +60,7 @@ header {
     width: 80%;
 }
 .fortune {
-    background-color: rgba(255,255,255,0.85);
+    background-color: #fff9c4;
     color: #1a237e;
     padding: 15px;
     font-family: monospace;
