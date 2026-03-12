@@ -80,9 +80,8 @@ eksctl version
 ```shell
  eksctl create cluster --name wisecow-cluster --region us-east-1 --nodegroup-name wisecow-nodes \
 --node-type t2.medium --nodes 2 --nodes-min 1 --nodes-max 2 --managed
-```
-
 # Update kubeconfig
+```shell
 aws eks update-kubeconfig --region us-east-1 --name wisecow-cluster
 kubectl get nodes
 ```
@@ -97,7 +96,7 @@ kubectl delete -f .
 
 ### Step 9: Install NGINX Ingress Controller 
 ``` shell
-kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/main/deploy/static/provider/aws/deploy.yaml.
+kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/main/deploy/static/provider/aws/deploy.yaml
 # Wait 1–2 minutes.
 kubectl get pods -n ingress-nginx
 ```
