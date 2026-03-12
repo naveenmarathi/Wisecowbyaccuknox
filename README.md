@@ -21,7 +21,7 @@
 ### Step 2: Install AWS CLI v2
 ``` shell
 curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
-sudo apt install unzip-y
+sudo apt install unzip -y
 unzip awscliv2.zip
 sudo ./aws/install
 sudo ./aws/install -i /usr/local/aws-cli -b /usr/local/bin --update
@@ -40,7 +40,7 @@ docker ps
 sudo chown $USER /var/run/docker.sock
 ```
 
-## Step 4: Build and Push Docker Image ECR
+### Step 4: Build and Push Docker Image ECR
 
 ```shell
 
@@ -75,17 +75,20 @@ sudo mv /tmp/eksctl /usr/local/bin
 eksctl version
 ```
 
-## Step 7: Setup EKS Cluster
+### Step 7: Setup EKS Cluster
 
 ```shell
  eksctl create cluster --name wisecow-cluster --region us-east-1 --nodegroup-name wisecow-nodes \
-  --node-type t2.medium --nodes 2 --nodes-min 1 --nodes-max 2 --managed
+--node-type t2.medium --nodes 2 --nodes-min 1 --nodes-max 2 --managed
+```
 
 # Update kubeconfig
 aws eks update-kubeconfig --region us-east-1 --name wisecow-cluster
 kubectl get nodes
 ```
+
 ### Step 8: Run Manifests
+
 ``` shell
 kubectl create namespace wisecow
 kubectl apply -f .
@@ -108,9 +111,10 @@ kubectl get svc -n ingress-nginx
 # Copy this. You will use it in the ingress file.
 ```
 
-# Verification:
-Once installed, verify the controller is running:
--kubectl get pods -n kube-system
+### Verification:
+#Once installed, verify the controller is running:
+``` shell
+kubectl get pods -n kube-system
 ```
 
 ### Step 11: Install cert-manager 
@@ -126,13 +130,16 @@ cert-manager-cainjector
 ```
 
 # Wait for cert-manager to be ready
+```shell
 kubectl wait --namespace cert-manager --for=condition=ready pod --selector=app=cert-manager --timeout=90s
 ```
 
 ### Step 12: Update cert-issuer.yaml
 # Apply
+```shell
 kubectl apply -f clusterissuer.yaml-issuer.yaml
 # Verify
+```shell
 kubectl get clusterissuer
 ```yaml
 
