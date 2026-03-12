@@ -1,31 +1,32 @@
 #!/usr/bin/env bash
 
 SRVPORT=4499
-RSPFILE=response
+RSPFILE="response"
 
-rm -f $RSPFILE
-mkfifo $RSPFILE
+rm -f "$RSPFILE"
+mkfifo "$RSPFILE"
 
 get_api() {
-    read line
-    echo $line
+    read -r line
+    echo "$line"
 }
 
 handleRequest() {
-    # 1) Process the request
+    # Read request
     get_api
+
     mod=$(fortune)
 
-cat <<EOF > $RSPFILE
+cat <<EOF > "$RSPFILE"
 HTTP/1.1 200 OK
 Content-Type: text/html
 
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Deployment of Wisecow Application using Kubernetes EKS</title>
-   <style>
+<meta charset="UTF-8">
+<title>Deployment of Wisecow Application using Kubernetes EKS</title>
+<style>
 body {
     font-family: Arial, sans-serif;
     background: linear-gradient(135deg, #2193b0, #6dd5ed);
@@ -33,50 +34,47 @@ body {
     padding: 0;
     color: #fff;
 }
-        header {
-            background-color: rgba(0, 0, 0, 0.2);
-            color: #fff;
-            padding: 20px;
-            text-align: center;
-        }
-        .signature {
-            background-color: rgba(255, 255, 255, 0.9);
-            color: #222;
-            padding: 10px;
-            text-align: center;
-            font-weight: bold;
-            border-radius: 6px;
-            margin: 20px auto;
-            width: 80%;
-        }
-        .fortune {
-            background-color: rgba(255, 255, 255, 0.85);
-            color: #1a237e;
-            padding: 15px;
-            font-family: monospace;
-            white-space: pre;
-            border: 1px solid #cce7ff;
-            margin: 20px auto;
-            width: 80%;
-            border-radius: 6px;
-        }
-        h2 {
-            color: #fff;
-        }
-    </style>
+header {
+    background-color: rgba(0,0,0,0.2);
+    padding: 20px;
+    text-align: center;
+}
+.signature {
+    background-color: rgba(255,255,255,0.9);
+    color: #222;
+    padding: 10px;
+    text-align: center;
+    font-weight: bold;
+    border-radius: 6px;
+    margin: 20px auto;
+    width: 80%;
+}
+.fortune {
+    background-color: rgba(255,255,255,0.85);
+    color: #1a237e;
+    padding: 15px;
+    font-family: monospace;
+    white-space: pre;
+    border: 1px solid #cce7ff;
+    margin: 20px auto;
+    width: 80%;
+    border-radius: 6px;
+}
+</style>
 </head>
 <body>
-    <header>
-        <h1>Welcome to Deployment of Wisecow Application</h1>
-    </header>
 
-    <div class="signature">
-        ✅ Successfully Deployed the Wisecow Application
-    </div>
+<header>
+<h1>Welcome to Deployment of Wisecow Application</h1>
+</header>
 
-    <div class="fortune">
+<div class="signature">
+✅ Successfully Deployed the Wisecow Application
+</div>
+
+<div class="fortune">
 $(cowsay "$mod")
-    </div>
+</div>
 
 </body>
 </html>
@@ -84,19 +82,28 @@ EOF
 }
 
 prerequisites() {
-    command -v cowsay >/dev/null 2>&1 &&
-    command -v fortune >/dev/null 2>&1 ||
-        {
-            echo "Install prerequisites: cowsay, fortune"
-            exit 1
-        }
+    if ! command -v cowsay >/dev/null 2>&1; then
+        echo "cowsay is not installed"
+        exit 1
+    fi
+
+    if ! command -v fortune >/dev/null 2>&1; then
+        echo "fortune is not installed"
+        exit 1
+    fi
+
+    if ! command -v nc >/dev/null 2>&1; then
+        echo "netcat (nc) is not installed"
+        exit 1
+    fi
 }
 
 main() {
     prerequisites
     echo "Wisecow server running on port=$SRVPORT..."
+
     while true; do
-        cat $RSPFILE | nc -l $SRVPORT | handleRequest
+        cat "$RSPFILE" | nc -l -p "$SRVPORT" | handleRequest
         sleep 0.01
     done
 }
