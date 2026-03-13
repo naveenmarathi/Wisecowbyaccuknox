@@ -50,7 +50,7 @@ header {
     text-align: center;
 }
 .signature {
-    background-color: rgba(255,255,255,0.9);
+    background-color: rgba(256,255,255,0.9);
     color: #222;
     padding: 10px;
     text-align: center;
