@@ -33,132 +33,60 @@ Connection: close
 
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
 <meta charset="UTF-8">
-<title>Wisecow DevOps Deployment</title>
-
+<title>Welcome to Deployment of Wisecow Application using Kubernetes EKS</title>
 <style>
-
 body {
-    font-family: "Segoe UI", Arial, sans-serif;
+    font-family: Arial, sans-serif;
+    background: linear-gradient(135deg, #2193b0, #6dd5ed);
     margin: 0;
     padding: 0;
-    background: linear-gradient(135deg,#0f2027,#203a43,#2c5364);
-    color: #ffffff;
+    color: #fff;
 }
-
 header {
+    background-color: rgba(0,0,0,0.2);
+    padding: 20px;
     text-align: center;
-    padding: 40px;
-    background: rgba(0,0,0,0.4);
 }
-
-header h1 {
-    margin: 0;
-    font-size: 36px;
-}
-
-header p {
-    margin-top: 10px;
-    font-size: 18px;
-    color: #cbd5f5;
-}
-
-.container {
+.signature {
+    background-color: rgba(255,255,255,0.9);
+    color: #222;
+    padding: 10px;
     text-align: center;
-    padding: 30px;
-}
-
-.badges {
-    margin: 20px 0;
-}
-
-.badge {
-    display: inline-block;
-    background: #1e293b;
-    padding: 10px 18px;
-    margin: 8px;
-    border-radius: 25px;
-    border: 1px solid #334155;
-    font-size: 14px;
-}
-
-.pipeline {
-    margin-top: 20px;
-    font-size: 16px;
-    color: #93c5fd;
-}
-
-.success-box {
-    background: #16a34a;
-    padding: 15px;
-    margin: 20px auto;
-    width: 60%;
-    border-radius: 8px;
     font-weight: bold;
+    border-radius: 6px;
+    margin: 20px auto;
+    width: 80%;
 }
-
 .fortune {
-    background: #020617;
-    color: #22c55e;
-    padding: 25px;
-    margin: 30px auto;
-    width: 70%;
+    background-color: #fff9c4;
+    color: #1a237e;
+    padding: 15px;
     font-family: monospace;
     white-space: pre;
-    border-radius: 8px;
-    border: 1px solid #334155;
-    box-shadow: 0px 6px 20px rgba(0,0,0,0.4);
+    border: 1px solid #cce7ff;
+    margin: 20px auto;
+    width: 80%;
+    border-radius: 6px;
 }
-
-footer {
-    text-align: center;
-    padding: 20px;
-    margin-top: 40px;
-    background: rgba(0,0,0,0.3);
-}
-
 </style>
 </head>
-
 <body>
 
 <header>
-<h1>🐄 Wisecow Application</h1>
-<p>Deployed using CI/CD Pipeline on Kubernetes EKS</p>
+<h1>Deployment of Wisecow Application on EKS </h1>
 </header>
 
-<div class="container">
-
-<div class="badges">
-<span class="badge">Docker</span>
-<span class="badge">Amazon ECR</span>
-<span class="badge">GitHub Actions</span>
-<span class="badge">Kubernetes</span>
-<span class="badge">Amazon EKS</span>
-</div>
-
-<div class="pipeline">
-GitHub → GitHub Actions → Docker → Amazon ECR → Kubernetes → Amazon EKS
-</div>
-
-<div class="success-box">
-✅ Application Successfully Deployed
+<div class="signature">
+✅ Successfully Deployed the Wisecow Application
 </div>
 
 <div class="fortune">
 $(cowsay "$mod")
 </div>
 
-</div>
-
-<footer>
-DevOps Demo Project | Wisecow Deployment
-</footer>
-
 </body>
-
 </html>
 EOF
 }
@@ -183,5 +111,4 @@ main() {
         sleep 0.01
     done
 }
-
-main
+Main
