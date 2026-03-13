@@ -13,7 +13,7 @@ The project demonstrates **containerization, CI/CD automation, Kubernetes deploy
 ---
 ## 🎥 Demo Video
 
-[![Demo Video](demo.png)](https://drive.google.com/file/d/1Pdiu1YHOJAym9yLOcBEg1f2F7twUcRAW/view?usp=drive_link)
+[![Watch the Demo](https://img.shields.io/badge/Watch-Demo_Video-blue?style=for-the-badge)](https://drive.google.com/file/d/1Pdiu1YHOJAym9yLOcBEg1f2F7twUcRAW/view?usp=drive_link)
 
 # 📌 Project Overview
 
