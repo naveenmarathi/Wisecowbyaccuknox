@@ -11,6 +11,9 @@ A **modern DevOps demonstration project** that deploys the classic **Wisecow app
 The project demonstrates **containerization, CI/CD automation, Kubernetes deployment, TLS security, and cloud infrastructure provisioning**.
 
 ---
+## 🎥 Demo Video
+
+[![Demo Video](demo.png)](https://drive.google.com/file/d/1Pdiu1YHOJAym9yLOcBEg1f2F7twUcRAW/view?usp=drive_link)
 
 # 📌 Project Overview
 
