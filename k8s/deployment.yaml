@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
       - name: wisecow
-        image: 
+        image: 091060535961.dkr.ecr.us-east-1.amazonaws.com/wisecow:latest
         imagePullPolicy: Always
         ports:
         - name: http
